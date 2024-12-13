@@ -12,7 +12,7 @@ test_data = pd.read_csv("generative-ai-for-reliability-engineering/test.csv")
 
 
 # System prompt for consistent responses
-SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]. For example, if you think the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. Don't provide anything else than the correct answer."""
+SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]. For example, if you think the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. Reason step by step, if you need to calculate anything, generate a python script to do the calculation. Limit your output to 400 words maximum."""
 
 
 def get_ai_response(question):
@@ -29,7 +29,9 @@ def get_ai_response(question):
         # Extract only the letter(s) using regex
         letters = re.findall(r"\[([a-zA-Z])\]", response)
 
-        return ",".join(letters)
+        extracted_answer = ",".join(letters)
+
+        return extracted_answer
     except Exception as e:
         print(f"Error processing question: {e}")
         return None
