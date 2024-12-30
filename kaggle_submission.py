@@ -56,7 +56,9 @@ for idx, question in enumerate(test_data["question"]):
 # Create submission dataframe
 submission = pd.DataFrame(
     {
-        "question_id": [i for i in range(len(predictions))],
+        "question_id": [
+            i + 1 for i in range(len(predictions))
+        ],  # Changed to start from 1
         "prediction_1": [pred[0] for pred in predictions],
         "prediction_2": [pred[1] for pred in predictions],
         "prediction_3": [pred[2] for pred in predictions],
