@@ -5,23 +5,30 @@ import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from rag import RAG, process_cheatsheet
+
 load_dotenv()
 client = OpenAI()
+rag = RAG(client, cheatsheet_path="cheatsheet.md")  # RAG instance
 
 # Read the CSV files
 test_data = pd.read_csv("generative-ai-for-reliability-engineering/test.csv")
 
 
 # System prompt for consistent responses
-SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]. For example, if you think the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. Reason step by step, if you need to calculate anything, generate a python script to do the calculation. Limit your output to 400 words maximum."""
+SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]. For example, if you think the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. You will be given some context followed by [Context]. Use it to reason step-by-step. if you need to calculate anything, generate a python script to do the calculation. Limit your output to 400 words maximum."""
 
 
 def get_ai_response(question):
     try:
+        # Retrieve relevant chunk from RAG
+        context = rag.get_relevant_chunks(question, top_k=1)[0]
+        rag_prompt = f"{SYSTEM_PROMPT}\n[Context]: {context}\n"
+
         completion = client.chat.completions.create(
             model="gpt-4o-mini",  # Use appropriate model
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": rag_prompt},
                 {"role": "user", "content": question},
             ],
             temperature=0,
