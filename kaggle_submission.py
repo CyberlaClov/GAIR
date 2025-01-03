@@ -2,9 +2,10 @@ import re  # Added import for regex
 import time
 
 import pandas as pd
+from dotenv import load_dotenv
 from openai import OpenAI
 
-# Initialize OpenAI client
+load_dotenv()
 client = OpenAI()
 
 # Read the CSV files
@@ -25,11 +26,15 @@ def get_ai_response(question):
             ],
             temperature=0,
         )
-        response = completion.choices[0].message.content.strip()
+        response = completion.choices[0].message.content
         # Extract only the letter(s) using regex
-        letters = re.findall(r"\[([a-zA-Z])\]", response)
+        generated_answer = response.split("[Answer]")[-1].strip().split("\n")[0]
+
+        letters = re.findall(r"\[([a-zA-Z])\]", generated_answer)
 
         extracted_answer = ",".join(letters)
+
+        print(extracted_answer)
 
         return extracted_answer
     except Exception as e:
