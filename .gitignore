@@ -2,3 +2,4 @@
 .env
 .virtualenv/
 __pycache__/
+*.ipynb
