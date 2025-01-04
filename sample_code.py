@@ -117,7 +117,7 @@ if __name__ == "__main__":
             dataset_path, mdl_name, sys_prompt, temperature, log_folder
         )
         if i == 1:
-            df_results["question_id"] = np.arange(len(predicted_result)) + 1∞
+            df_results["question_id"] = np.arange(len(predicted_result)) + 1
         df_results[f"prediction_{i}"] = predicted_result
 
     df_results.to_csv(
