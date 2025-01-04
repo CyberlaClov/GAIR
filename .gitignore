@@ -1,0 +1,6 @@
+.venv/
+.env
+.virtualenv/
+__pycache__/
+*.ipynb
+.DS_Store
