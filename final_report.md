@@ -1,6 +1,6 @@
 ---
-title: Final report
-author: Jéremy Mathet - Clovis Piedallu
+title: Final Report
+author: Jérémy Mathet - Clovis Piedallu
 date: \today
 toc: true
 toc-depth: 3
@@ -12,13 +12,19 @@ fontsize: 11pt
 header-includes:
   - \usepackage{fancyhdr}
   - \pagestyle{fancy}
-  - \fancyhead[L]{Reliability Engineering Assessment}
+  - \fancyhead[L]{Final Report}
   - \fancyhead[R]{\thepage}
   - \usepackage{float}
   - \usepackage{booktabs}
 ---
 
 # Introduction
+
+## Prompt Engineering
+
+## RAG
+
+## AI Agent
 
 # Conclusion
 
