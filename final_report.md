@@ -106,15 +106,17 @@ Our first submission only with the prompt engineering was very poor (quite avera
 
 # RAG (Retrieval-Augmented Generation)
 
+## Cheatsheet
+
 The RAG integration uses a custom RAG class to retrieve relevant documentation chunks, combines multiple chunks for broader context, and maintains the original text structure with separators.
 
-Thus, our RAG class core functions include cheatsheet processing where the document is loaded from markdown, split into semantic chunks, embeddings generated and cached, and similarity search on query. The search implementation uses cosine similarity between embeddings, top-k retrieval (default k=1), context preservation with headers, and token count optimization. This implementation focuses on maintaining document structure while enabling efficient semantic search through the reliability engineering documentation.
+Thus, our RAG class core functions include cheatsheet processing where the document is loaded from markdown, split into semantic chunks, embeddings generated and cached, and similarity search on query. The search implementation uses cosine similarity between embeddings, top-k retrieval (default k=3), context preservation with headers, and token count optimization. This implementation focuses on maintaining document structure while enabling efficient semantic search through the reliability engineering documentation.
 
-Let's delve deeper into our functions. We used an open-source reliability library, which we extracted into a 20,000-line markdown file. For the code structure, we were inspired by the simple_rag_from_scratch file seen in class.
+Let's delve deeper into our functions. We used an open-source reliability library, which we extracted into a 20,000-line markdown file. We managed to get it reduces to about 12,000 lines but it is still a huge amount to deal with. For the code structure, we were inspired by the simple_rag_from_scratch file seen in class.
 
 Our RAG (Retrieval Augmented Generation) class is a response generation system augmented by information retrieval, designed to answer questions using a markdown cheatsheet. Here is a detailed explanation of its operation, including embeddings and various parts of the code:
 
-* RAG Class
+## RAG Class
 
 The RAG class is initialized with several parameters:
 
@@ -205,13 +207,15 @@ def get_relevant_chunks(self, query: str, top_k: int = 1) -> list:
   return [self._chunks[i] for i in top_indices]
 ```
 
-We got some issues with
+## Limits of our RAG
+
+We got some issues with... Dire qu'on a tenté une cheatsheet plus courte ? Problème de pertinence des chunks ?
 
 # AI Agent
 
-Le RAG a permis d'augmenter un peu notre accuracy mais notre modèle performe très mal lorsqu'il y a des calculs à faire. Comme on l'a expliqué dans notre précédent rapport, l'utilisation d'un script python pourrait empêcher ces problèmes d'hallucination.
+The RAG slightly improved our accuracy, but our model performs very poorly when calculations are required. As we explained in our previous report, using a Python script could prevent these hallucination issues.
 
-Voici comment on a décomposé notre agent en s'aidant du notebook demo_agent.
+Here is how we decomposed our agent with the help of the demo_agent notebook.
 
 ## llm_runner Function
 
@@ -259,6 +263,29 @@ It defines a system prompt explaining the assistant's capabilities.
 
 It defines a tool for executing Python scripts.
 
+```python
+tools = [
+  {
+    "type": "function",
+    "function": {
+      "name": "execute_python_script",
+      "description": "Executes a python script in a sandboxed environment.
+      Return the stdout printed by the script.",
+      "parameters": {
+        "type": "object",
+        "required": ["script"],
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "The python script to execute."
+          }
+        }
+      }
+    }
+  }
+    ]
+```
+
 * LLM Interaction:
 
 It calls llm_runner with the prompt and tools to get a response from the LLM.
@@ -271,6 +298,13 @@ If the LLM response indicates a tool call, it extracts the script and executes i
 
 It sends the execution result back to the LLM client to generate a final response.
 
+## Issues encountered
+
+For some questions that require a script calling, our LLM started answering in a wrong format, like "1,3" or even several times the same letter, or no letter at all. That lowers our accuracy because some predictions were irrelevant.
+
+A compléter
 
 # Conclusion
+
+A compléter
 
