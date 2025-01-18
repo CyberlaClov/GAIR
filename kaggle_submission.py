@@ -49,7 +49,7 @@ def get_ai_response(question, sys_prompt, temperature=1, tools=None):
                     result = result.strip("'").rstrip("\n")
 
                 else:
-                    result = "Please ignore the result of the script and generate your response independently. Don't forget : at the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]"
+                    result = "Please ignore the result of the script and generate your response independently with a theoritical reasonning. Don't forget : at the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]"
             except Exception as e:
                 result = "Script execution failed. Ignore the script result and generate your response independently, following the same output format as instructed."
 
@@ -61,7 +61,6 @@ def get_ai_response(question, sys_prompt, temperature=1, tools=None):
                 "tool_call_id": completion.choices[0].message.tool_calls[0].id,
             }
 
-            # print(completion.choices[0].message)
             completion_payload = {
                 "model": "gpt-4o-mini",
                 "messages": [
@@ -88,11 +87,7 @@ def get_ai_response(question, sys_prompt, temperature=1, tools=None):
         else:
             completion_final = completion
 
-        # print(completion_final.choices[0].message.content)
-
         response_txt = completion_final.choices[0].message.content
-
-        # print(response_txt)
 
         # Extract only the letter(s) using regex
         generated_answer = response_txt.split("[Answer]")[-1].strip().split("\n")[0]
@@ -100,8 +95,6 @@ def get_ai_response(question, sys_prompt, temperature=1, tools=None):
         letters = re.findall(r"\[([a-zA-Z])\]", generated_answer)
 
         extracted_answer = ",".join(letters)
-
-        print(extracted_answer, script_executed)
 
         return extracted_answer
     except Exception as e:
@@ -115,50 +108,29 @@ if __name__ == "__main__":
     # Read the CSV files
     test_data = pd.read_csv("generative-ai-for-reliability-engineering/test.csv")
 
-    # # System prompt for consistent responses
-    # SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. You will be given some context followed by [Context]. Use it to reason step-by-step. If you need any calculation, follow the steps below:
-    # ○ Think step-by-step and derive an equation for the calculation.
-    # ○ Generate a python script for the calculation. When its documentation is provided and has a clear advantage over scipy, use the python library 'reliability' with respect to its documentation. When using 'reliability', be careful on the importation of desired classes and functions. When you need a particular Distributions import it using from reliability.Distributions import [distrbution you need]. Systematically print the results at the end of the script. For example, if the result you want is called QoI, add this line at the end of your script: "print(QoI)"
-    # ○ Next, Use the tool "execute_python_script" to execute the python script. This tool runs the code in a sandbox and catch the std.out. You will receive the std.out from the script your generated.
-    # ○ Choose the correct answer from the given choices based on the calculated QoI. If no exact match exists, choose the choice that is the closest to the calculated QoI.
-
-    # At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]. For example, if you think the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. Limit your output to 400 words maximum."""
-
     # System prompt for consistent responses
-    SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. You will be given some context followed by [Context]. Use it to reason step-by-step.
+    SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering. Choose the correct answer. You will be given some context followed by [Context]. Use it to reason step-by-step. If you need any calculation, follow the steps below:
 
-    When performing calculations:
-    1. Think step-by-step and derive an equation.
-    2. Generate a python script using primarily the 'reliability' library. If needed, import specific distributions using: from reliability.Distributions import [distribution].
-    3. Include error handling in your script using try-except blocks.
-    4. Print results with print(QoI).
-    5. Use execute_python_script to run the code.
-
-    If the calculation fails:
+    ○ First think step-by-step and derive an equation for the calculation while explaining your reasonning.
+    ○ Generate a python script for the calculation. Use primarily 'reliability' or 'scipy' python libraries. When using 'reliability', be careful on the importation of desired classes and functions. When you need a particular Distributions import it using from reliability.Distributions import [distrbution you need]. Always print what is relevant to answer the question at the end of the script. For example, if the result you want is called QoI, add this line at the end of your script: "print(QoI)". Be careful when data is provided in the question, you should use it in your script,
+    ○ Next, Use the tool "execute_python_script" to execute the python script. This tool runs the code in a sandbox and catch the std.out. You will receive the std.out from the script your generated that is why you need to use print in your script.
+    ○ Choose the correct answer from the given choices based on the results of your script. If no exact match exists, choose the choice that is the closest to the calculated result. If the calculation fails:
     - DO NOT return None or invalid results
     - Fall back to theoretical reasoning using the reliability documentation context
     - Use approximations if necessary
     - Always provide a reasoned answer choice
+    - Never generate a script without a print statement at the end providing the needed calculations.
 
-    For reliability library usage:
-    - Reference the provided documentation
-    - Prefer reliability library over scipy when documentation shows clear advantages
-    - Double-check distribution parameter requirements
-
-    At the end, use format:
-    [Answer] [letter choice]
-    For multiple answers: [Answer] [a], [b]
-
-    Maximum response: 400 words."""
+    At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose]. For example, if you think the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. Limit your output to 400 words maximum."""
 
     mdl_name = "gpt-4o-mini"  # Model name
-    prompt_name = "rag_API_and_agent"  # Prompt name
-    temperature = 0.5  # Set temperature for AI response
+    prompt_name = "full_RAG_corrected_agent"  # Prompt name
+    temperature = 0  # Set temperature for AI response
     cheatsheet_path = "full_reliability_documentation.md"
 
     load_dotenv()
     client = OpenAI()
-    rag = RAG(client, cheatsheet_path, chunks_to_load=6)  # RAG instance
+    rag = RAG(client, cheatsheet_path, chunks_to_load=10)  # RAG instance
     predictions = []
 
     for idx, question in tqdm(
@@ -210,8 +182,8 @@ if __name__ == "__main__":
     print(
         f"Prediction results saved to {log_folder}/predition_{mdl_name}_{prompt_name}_temperature_{temperature}.csv"
     )
-    # question = test_data["question"][11]
+    # question = test_data["question"][3]
     # print(question)
-    answer = get_ai_response(
-        question, sys_prompt=SYSTEM_PROMPT, temperature=temperature, tools=tools
-    )
+    # answer = get_ai_response(
+    #     question, sys_prompt=SYSTEM_PROMPT, temperature=temperature, tools=tools
+    # )
