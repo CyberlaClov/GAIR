@@ -1,0 +1,9 @@
+.venv/
+.env
+.virtualenv/
+.virtualvenv/
+__pycache__/
+*.ipynb
+.DS_Store
+*.csv
+
