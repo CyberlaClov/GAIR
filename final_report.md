@@ -1,14 +1,16 @@
 ---
-title: Final Report
+title: Generative AI for Risk and Reliability
+subtitle: Final Report
 author: Jérémy Mathet - Clovis Piedallu
 date: \today
-
 
 documentclass: article
 classoption: a4paper
 mainfont: "DejaVu Sans"
 monofont: "DejaVu Sans Mono"
-geometry: margin=2.5cm
+geometry:
+  - margin=2.5cm
+  - textwidth=15cm
 linkcolor: blue
 fontsize: 11pt
 toc: true
@@ -19,10 +21,16 @@ header-includes: |
     \usepackage{float}
     \usepackage{booktabs}
     \pagestyle{fancy}
-    \fancyhead[L]{Final Report}
+    \fancyhead[L]{Generative AI for Risk and Reliability}
     \fancyhead[R]{\thepage}
     \usepackage[utf8]{inputenc}
     \usepackage{geometry}
+    \usepackage{listings}
+    \lstset{
+        breaklines=true,
+        postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space},
+        basicstyle=\ttfamily\footnotesize
+    }
 ---
 
 \newpage
@@ -46,63 +54,51 @@ Here is our prompt:
 ```markdown
 You will be given a multiple choice question about reliability engineering.
 Choose the correct answer.
-You will be given some context followed by "Context".
+You will be given some context followed by [Context].
 Use it to reason step-by-step.
+If you need any calculation, follow the steps below:
 
-When performing calculations:
-1. Think step-by-step and derive an equation.
-2. Generate a python script using primarily the 'reliability' library.
-If needed, import specific distributions using:
-from reliability.Distributions import [distribution].
-3. Include error handling in your script using try-except blocks.
-4. Print results with print(QoI).
-5. Use execute_python_script to run the code.
-
+* First think step-by-step and derive an equation for the calculation
+while explaining your reasonning.
+* Generate a python script for the calculation. Use primarily 'reliability' or 'scipy'
+python libraries. When using 'reliability', be careful on the importation of desired
+classes and functions. When you need a particular Distributions
+import it using from reliability.Distributions import [distrbution you need].
+Always print what is relevant to answer the question at the end of the script.
+For example, if the result you want is called QoI, add this line at the end of your script: "print(QoI)".
+Be careful when data is provided in the question, you should use it in your script,
+* Next, Use the tool "execute_python_script" to execute the python script. This tool runs
+the code in a sandbox and catch the std.out. You will receive the std.out from the script
+your generated that is why you need to use print in your script.
+* Choose the correct answer from the given choices based on the results of your script.
+If no exact match exists, choose the choice that is the closest to the calculated result.
 If the calculation fails:
 - DO NOT return None or invalid results
 - Fall back to theoretical reasoning using the reliability documentation context
 - Use approximations if necessary
 - Always provide a reasoned answer choice
+- Never generate a script without a print statement at the end providing the needed calculations.
 
-For reliability library usage:
-- Reference the provided documentation
-- Prefer reliability library over scipy when documentation shows clear advantages
-- Double-check distribution parameter requirements
-
-At the end, use format:
-[Answer] [letter choice]
-For multiple answers: [Answer] [a], [b]
-
-Maximum response: 400 words.
+At the end of your response, start a new line and use the following format
+to output your answer: [Answer] [The letters you choose]. For example, if you think
+the answer [a] is correct, output [Answer] [a]. If you think there are multiple correct
+answer, using a comma to separate them, e.g., [Answer] [a], [b].
+Limit your output to 400 words maximum.
 ```
 
-This prompt uses several classic prompt engineering techniques, including:
+This prompt leverages several key techniques:
 
-* Chain of Thought (CoT):
+* Chain of Thought (CoT): Enforces step-by-step reasoning through explicit calculation instructions and equation derivation requirements.
 
-The prompt encourages step-by-step thinking to solve calculations. This helps structure thought and improve response accuracy ("Think step-by-step and derive an equation").
+* Output Structuring: Mandates specific answer format with "[Answer] [x]" syntax and comma-separated multiple choices.
 
-* Few-Shot Learning:
+* Error Recovery: Provides clear fallback instructions to use theoretical reasoning when calculations fail.
 
-Although the prompt does not provide explicit examples, it guides the user through a series of specific steps to solve the problem. This can be considered an implicit form of few-shot learning where detailed instructions serve as models. Example: "Generate a python script using primarily the 'reliability' library."
+* Execution Guidelines: Details requirements for Python script generation using reliability/scipy libraries and proper print statements.
 
-* Error Handling:
+* Context Integration: Specifies how to utilize provided [Context] sections for informed decision making.
 
-The prompt includes instructions for handling errors, which is crucial for robust and reliable responses. Example: "Include error handling in your script using try-except blocks."
-
-* Fallback Mechanism:
-
-If the calculation fails, the prompt asks to revert to theoretical reasoning using the reliability library documentation. This ensures that the user always provides a reasoned answer (theorytically). Example: "Fall back to theoretical reasoning using the reliability documentation context."
-
-* Specific Instructions:
-
-The prompt gives precise instructions on the use of libraries and distributions, which helps guide the user towards correct and optimized solutions. Example: "Prefer reliability library over scipy when documentation shows clear advantages."
-
-* Output Formatting:
-
-The prompt specifies the response format, which helps standardize responses and make them easier to evaluate, which was already given.
-
-Our first submission only with the prompt engineering was very poor (quite average, such as the benchmark), so now we tried to use the different methods seen in class.
+Our initial submission using only prompt engineering achieved average performance, leading us to explore additional enhancement methods.
 
 # RAG (Retrieval-Augmented Generation)
 
@@ -209,102 +205,58 @@ def get_relevant_chunks(self, query: str, top_k: int = 1) -> list:
 
 ## Limits of our RAG
 
-We got some issues with... Dire qu'on a tenté une cheatsheet plus courte ? Problème de pertinence des chunks ?
+Because of the massive size of our RAG, we got some issues with the relevance of the chunks selected regarding cosine similarity. Indeed, a lot of the reliability library documentation was dedicated to specific examples with sometimes large and detailed answers. When selecting only the most relevant chunk, it was often not useful and even sometimes inapropriate because it was encouraging at using a particular function within `reliability` library even if it wasn't suit for the particular question.
 
 # AI Agent
 
 The RAG slightly improved our accuracy, but our model performs very poorly when calculations are required. As we explained in our previous report, using a Python script could prevent these hallucination issues.
 
-Here is how we decomposed our agent with the help of the demo_agent notebook.
+## Agent definition
 
-## llm_runner Function
+Our agent architecture follows the same workflow as presented in the lecture, implementing function calling through the OpenAI API to execute Python code when calculations are needed. The RAG system helped improve our model's understanding of theoretical concepts, but we still faced challenges with numerical calculations where Python execution was required.
 
-This function is responsible for interacting with a LLM client to generate responses based on a system prompt and a user question.
 
-* Input Messages:
 
-It creates a list of messages with roles "system" and "user" containing the system prompt and the user question.
-
-* Completion Request:
-
-It sends these messages to the LLM client to generate a response. If tools are provided, they are included in the request.
-
-* Return: The function returns the completion generated by the LLM client.
-
-## execute_python_script Function
-
-This function executes a given Python script in a sandboxed environment and returns the output.
-
-* Timeout and Executable:
-
-It sets a timeout for the script execution and determines the Python executable to use.
-
-* Write Script:
-
-It writes the provided script to a file named sandbox_script.py.
-
-* Run Script:
-
-It runs the script using subprocess.run, capturing the output and handling any exceptions.
-
-* Cleanup: 
-
-It deletes the script file after execution and returns the script's output or an error message if execution fails.
-
-## kaggle_agent Function
-
-This function uses the llm_runner to interact with the LLM and execute Python code if needed.
-
-* System Prompt:
-
-It defines a system prompt explaining the assistant's capabilities.
-
-* Tools Definition:
-
-It defines a tool for executing Python scripts.
-
+Our implementation uses a standardized tool definition:
 ```python
-tools = [
-  {
+tools = [{
     "type": "function",
     "function": {
-      "name": "execute_python_script",
-      "description": "Executes a python script in a sandboxed environment.
-      Return the stdout printed by the script.",
-      "parameters": {
-        "type": "object",
-        "required": ["script"],
-        "properties": {
-          "script": {
-            "type": "string",
-            "description": "The python script to execute."
-          }
-        }
-      }
-    }
-  }
-    ]
+        "name": "execute_python_script",
+        "description": """Executes a python script in a sandboxed environment.
+        Return the stdout printed by the script.""",
+        "strict": True,
+        "parameters": {
+            "type": "object",
+            "required": ["script"],
+            "properties": {
+                "script": {
+                    "type": "string",
+                    "description": "The python script to execute."
+                }
+            },
+            "additionalProperties": False,
+        },
+    },
+}]
 ```
 
-* LLM Interaction:
+## Limits
 
-It calls llm_runner with the prompt and tools to get a response from the LLM.
+When script execution fails or returns no output, we provide the LLM with clear fallback instructions:
+```python
+result = """Please ignore the result of the script and generate your response independently
+ with a theoretical reasoning. Don't forget : at the end of your response, start a new line
+and use the following format to output your answer: [Answer] [The letters you choose]"""
+```
 
-* Tool Execution:
+This ensures that even when numerical calculations fail, the model can fall back to theoretical reasoning using the RAG context.
 
-If the LLM response indicates a tool call, it extracts the script and executes it using execute_python_script.
-
-* Final Response:
-
-It sends the execution result back to the LLM client to generate a final response.
-
-## Issues encountered
-
-For some questions that require a script calling, our LLM started answering in a wrong format, like "1,3" or even several times the same letter, or no letter at all. That lowers our accuracy because some predictions were irrelevant.
-
-A compléter
+However, some scripts would still fails or returns no output, we did our best to understand why but even with a parameter `temperature=0`, it could generates different scripts for a same question.
 
 # Conclusion
 
-A compléter
+Our approach to tackling reliability engineering problems using LLMs proved effective, achieving an accuracy of 0.82 and securing third place in the competition. The combination of prompt engineering, RAG system, and Python execution agent created a robust solution capable of handling both theoretical and computational questions. While we encountered challenges with the size of our documentation corpus and script execution reliability, our system's ability to gracefully fall back to theoretical reasoning when calculations failed helped maintain consistent performance. Future improvements could focus on refining the RAG system's chunk selection and enhancing script generation reliability.
+
+
 
