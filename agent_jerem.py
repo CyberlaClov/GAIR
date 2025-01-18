@@ -1,4 +1,4 @@
-# Import nécessaires
+
 from openai import OpenAI
 import re, json, os
 import pandas as pd
@@ -122,7 +122,7 @@ def kaggle_agent(prompt, client, mdl_name="gpt-4o-mini", temperature=1):
 
 if __name__ == "__main__":
     client = OpenAI()
-    mdl_name = "gpt-4o-mini"  # ou votre modèle préféré
+    mdl_name = "gpt-4o-mini" 
     
     # Example usage
     prompt = "Analysez les données de mon fichier data.csv et créez un graphique"

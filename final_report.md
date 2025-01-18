@@ -301,10 +301,9 @@ It sends the execution result back to the LLM client to generate a final respons
 ## Issues encountered
 
 For some questions that require a script calling, our LLM started answering in a wrong format, like "1,3" or even several times the same letter, or no letter at all. That lowers our accuracy because some predictions were irrelevant.
-
-A compléter
+The functions described above are from the `agent_jerem.py` file, but we achieved the best scores with the `agents.py` file. However, we encountered difficulties with the agent as it sometimes generated incorrect code.
 
 # Conclusion
+Our private score reflects that our model is correct as it does not overfit the train_test, unlike others, which may explain why we were only at 0.816 in the public score and not above. Despite the challenges, our approach demonstrates a balanced performance, indicating potential for further improvements with refined prompt engineering and better handling of edge cases in code generation. Additionally, writing a more concise cheatsheet could also lead to more relevant chunks and thus improve our accuracy.
 
-A compléter
 
