@@ -80,4 +80,4 @@ This project was evaluated through a [Kaggle competition](https://www.kaggle.com
 - Demonstrates strong performance in applying AI to reliability engineering problems
 
 ## Note
-This project is part of the Gen AI for Risk and Reliability course at CentraleSupélec.
+This project is part of the Gen AI for Risk and Reliability course at CentraleSupélec, under the supervision of Pr. Zhiguo Zeng 
