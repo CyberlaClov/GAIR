@@ -16,7 +16,7 @@ The main objective is to leverage GPT-4-turbo's capabilities to:
 ## Project Components
 
 ### RAG System (rag.py)
-The Retrieval Augmented Generation (RAG) system is implemented in `rag.py`. It provides:
+The Retrieval Augmented Generation (RAG) system is implemented in `rag.py`. It's based on the full documentation of [reliability python library](https://reliability.readthedocs.io/en/latest/), stored in a 20K lines markdown file. It provides:
 - A comprehensive knowledge base built from reliability engineering documentation
 - Integration with the reliability library's API documentation
 - Intelligent chunking of documentation with hierarchy preservation
@@ -29,6 +29,8 @@ Key features:
 - Maintains section structure from the original documentation
 - Efficient embedding storage and retrieval system
 - Configurable chunk sizes and overlap
+
+Full RAG and embeddings can be found in `rags` folder.
 
 ### Python Execution Agent (agents.py)
 The Python execution environment, defined in `agents.py`, provides:
