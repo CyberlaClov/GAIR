@@ -1,14 +1,14 @@
 # GPT-4 for Reliability Engineering Exam Assistant
 
 ## Overview
-This project explores the capabilities of GPT-4 in the context of reliability engineering examinations. It utilizes the gpt-4o-mini model to assist in solving reliability engineering problems and demonstrate the potential of AI in technical education.
+This project explores the capabilities of GPT-4 in the context of [Certified Reliability Engineer Exam](https://www.asq.org/cert/reliability-engineer?srsltid=AfmBOorf-rWbGDrbFdaDHpQIncpyYMkiETH2lRHoPlKbFrzsZlobAkLt) (CRE) of American Society of Quality (ASQ). It utilizes the gpt-4o-mini model to assist in solving reliability engineering problems.
 
 ## Authors
 - Clovis Piedallu (CentraleSupélec)
 - Jérémy Mathet (CentraleSupélec)
 
 ## Project Purpose
-The main objective is to leverage GPT-4-turbo's capabilities to:
+The main objective is to leverage GPT-4's capabilities to:
 - Analyze and solve reliability engineering problems
 - Demonstrate AI's potential in technical assessments
 - Explore the boundaries of AI assistance in engineering education
