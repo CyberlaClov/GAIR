@@ -19,13 +19,35 @@ test_data = pd.read_csv("generative-ai-for-reliability-engineering/test.csv")
 
 # System prompt for consistent responses
 SYSTEM_PROMPT = """You will be given a multiple choice question about reliability engineering.
-Choose the correct answer. At the end of your response, start a new line and use the following format to output your answer: [Answer] [The letters you choose].
-For example, if you think the answer [a] is correct, output [Answer] [a].
-If you think there are multiple correct answer, using a comma to separate them, e.g., [Answer] [a], [b]. Do not output numbers or any other characters.
-Limit your choice to a maximum of 2 distinct answers per question, and do not output more than one time the same letter.
-You will be given some context followed by [Context].
-Use the context to reason step-by-step and to generate each answer.
-If you need to calculate anything, generate a python script to do the calculation. Limit your output to 400 words maximum."""
+Choose the correct answer.
+You will be given some context followed by "Context".
+Use it to reason step-by-step.
+
+When performing calculations:
+1. Think step-by-step and derive an equation.
+2. Generate a python script using primarily the 'reliability' library.
+If needed, import specific distributions using:
+from reliability.Distributions import [distribution].
+3. Include error handling in your script using try-except blocks.
+4. Print results with print(QoI).
+5. Use execute_python_script to run the code.
+
+If the calculation fails:
+- DO NOT return None or invalid results
+- Fall back to theoretical reasoning using the reliability documentation context
+- Use approximations if necessary
+- Always provide a reasoned answer choice
+
+For reliability library usage:
+- Reference the provided documentation
+- Prefer reliability library over scipy when documentation shows clear advantages
+- Double-check distribution parameter requirements
+
+At the end, use format:
+[Answer] [letter choice]
+For multiple answers: [Answer] [a], [b]
+
+Maximum response: 400 words."""
 
 
 

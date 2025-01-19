@@ -241,6 +241,22 @@ tools = [{
 }]
 ```
 
+* LLM Interaction:
+
+It calls llm_runner with the prompt and tools to get a response from the LLM.
+
+* Tool Execution:
+
+If the LLM response indicates a tool call, it extracts the script and executes it using execute_python_script.
+
+* Final Response:
+
+It sends the execution result back to the LLM client to generate a final response.
+
+## Issues encountered
+
+For some questions that require a script calling, our LLM started answering in a wrong format, like "1,3" or even several times the same letter, or no letter at all. That lowers our accuracy because some predictions were irrelevant.
+The functions described above are from the `agent_jerem.py` file, but we achieved the best scores with the `agents.py` file. However, we encountered difficulties with the agent as it sometimes generated incorrect code.
 ## Limits
 
 When script execution fails or returns no output, we provide the LLM with clear fallback instructions:
@@ -255,8 +271,6 @@ This ensures that even when numerical calculations fail, the model can fall back
 However, some scripts would still fails or returns no output, we did our best to understand why but even with a parameter `temperature=0`, it could generates different scripts for a same question.
 
 # Conclusion
-
-Our approach to tackling reliability engineering problems using LLMs proved effective, achieving an accuracy of 0.82 and securing third place in the competition. The combination of prompt engineering, RAG system, and Python execution agent created a robust solution capable of handling both theoretical and computational questions. While we encountered challenges with the size of our documentation corpus and script execution reliability, our system's ability to gracefully fall back to theoretical reasoning when calculations failed helped maintain consistent performance. Future improvements could focus on refining the RAG system's chunk selection and enhancing script generation reliability.
-
+Our private score reflects that our model is correct as it does not overfit the train_test, unlike others, which may explain why we were only at 0.816 in the public score and not above. Despite the challenges, our approach demonstrates a balanced performance, indicating potential for further improvements with refined prompt engineering and better handling of edge cases in code generation. Additionally, writing a more concise cheatsheet could also lead to more relevant chunks and thus improve our accuracy.
 
 
